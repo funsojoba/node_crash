@@ -1,25 +1,38 @@
+import express from "express";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
 
-const os = require("os")
-const fs = require("fs")
-// setTimeout(()=>{
-//     console.log("In the timeout")
-//     clearInterval(inte)
-// }, 3000)
+import notFoundMiddleware from "./middleware/not-found.js";
+import errorHandlerMiddleware from "./middleware/error-handler.js"
 
-// const inte = setInterval(()=>{
-//     console.log("In the interval")
-// }, 1000)
+import usersRoute from "./routes/users.js"
+import connectDB from "./db/connect.js";
 
-// console.log(os.platform())
+const app = express();
+const PORT = process.env.PORT  || 5000;
 
-fs.readFile("./README.md", (error, data)=>{
-    if(error){
+dotenv.config();
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
+app.use(bodyParser.json());
+
+
+// Routes
+app.use('/users', usersRoute);
+
+
+
+const start = async ()=>{
+    try{
+        await connectDB(process.env.MONGODB_URI)
+        app.listen(PORT, ()=>{
+            console.log('Server running on port '+ PORT)
+        })
+    }catch (error){
         console.log(error)
     }
-    console.log(data.toString())
-})
+}
 
 
-fs.writeFile("./docs/test.txt", "hello world", ()=>{
-    console.log("written successfully")
-})
+start()
